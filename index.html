@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>大风沙管理系统</title>
+    <link rel="stylesheet" href="node_modules/layui-src/src/css/layui.css">
+</head>
+<body>
+<div class="page-container">
+    <div class="layui-tab" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li>企业公告管理</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <button type="button" class="layui-btn refresh">刷新</button>
+                <button type="button" class="layui-btn add">添加</button>
+                <table id="announcement" lay-filter="table"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="node_modules/layui-src/src/layui.js"></script>
+<script src="node_modules/layui-src/src/lay/modules/jquery.js"></script>
+<script src="src/util/login.js"></script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script>
+    let apiPath = "http://localhost/api";
+    layui.use(['table', 'element', 'layedit'], function () {
+        let table = layui.table;
+        let $ = layui.$;
+        let element = layui.element
+        let layedit = layui.layedit;
+        layedit.build('richText'); //建立编辑器
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            url: apiPath + "/auth/webLogin",
+            data: JSON.stringify({username: 'admin', password: 123456}),
+            success: function (result) {
+                if (result.code === 0 && result.data && result.data.token) {
+                    let token = result.data.token;
+                    localStorage.setItem("token", token);
+                } else {
+                    layer.msg('登陆失败，' + result.message, {icon: 5});
+                }
+
+            }
+        });
+        table.render({
+            elem: '#announcement'
+            , url: '/api/user/impCompanyNotice/query_page?page=1&size=10'
+            , headers: {"access_token": localStorage.getItem('token')}
+            , even: true
+            , cols: [[ //表头
+                {field: 'noticeTitle', title: '公告标题', fixed: 'left'}
+                , {field: 'source', title: '来源',}
+                , {field: 'createTime', title: '创建时间'}
+                , {title: '操作', toolbar: '#barDemo',}
+            ]]
+            , parseData: function (res) {
+                res.data.records.forEach((record) => {
+                    record.createTime = new Date(record.createTime);
+                })
+                let tableData = {}
+                tableData.code = 0
+                tableData.msg = ''
+                tableData.count = 1000
+                tableData.data = res.data.records
+                return tableData
+            },
+        });
+        $('.add').click(function () {
+            element.tabAdd('tab', {
+                title: '添加企业公告',
+                content: ''
+            })
+        })
+    });
+</script>
+</body>
+</html>
