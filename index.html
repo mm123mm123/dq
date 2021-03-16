@@ -31,51 +31,58 @@
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
 <script>
-    let apiPath = "http://localhost/api";
+    top.apiPath = "http://localhost/api";
     layui.use(['table', 'element', 'layedit'], function () {
         let table = layui.table;
         let $ = layui.$;
         let element = layui.element
         let layedit = layui.layedit;
         layedit.build('richText'); //建立编辑器
+        top.parentTabDel = function (id) {
+            element.tabDelete('tab', id)
+        }
+        top.parentTabChange = function (id) {
+            element.tabChange('tab', id)
+        }
         $.ajax({
             type: "POST",
             dataType: "json",
             contentType: "application/json;charset=utf-8",
-            url: apiPath + "/auth/webLogin",
+            url: top.apiPath + "/auth/webLogin",
             data: JSON.stringify({username: 'admin', password: 123456}),
             success: function (result) {
                 if (result.code === 0 && result.data && result.data.token) {
                     let token = result.data.token;
                     localStorage.setItem("token", token);
+                    table.render({
+                        elem: '#announcement'
+                        , url: '/api/user/impCompanyNotice/query_page?page=1&size=10'
+                        , headers: {"access_token": localStorage.getItem('token')}
+                        , even: true
+                        , cols: [[ //表头
+                            {field: 'noticeTitle', title: '公告标题', fixed: 'left'}
+                            , {field: 'source', title: '来源',}
+                            , {field: 'createTime', title: '创建时间'}
+                            , {title: '操作', toolbar: '#barDemo',}
+                        ]]
+                        , parseData: function (res) {
+                            res.data.records.forEach((record) => {
+                                record.createTime = new Date(record.createTime);
+                            })
+                            let tableData = {}
+                            tableData.code = 0
+                            tableData.msg = ''
+                            tableData.count = 1000
+                            tableData.data = res.data.records
+                            return tableData
+                        },
+                    });
                 } else {
                     layer.msg('登陆失败，' + result.message, {icon: 5});
                 }
             }
         });
-        table.render({
-            elem: '#announcement'
-            , url: '/api/user/impCompanyNotice/query_page?page=1&size=10'
-            , headers: {"access_token": localStorage.getItem('token')}
-            , even: true
-            , cols: [[ //表头
-                {field: 'noticeTitle', title: '公告标题', fixed: 'left'}
-                , {field: 'source', title: '来源',}
-                , {field: 'createTime', title: '创建时间'}
-                , {title: '操作', toolbar: '#barDemo',}
-            ]]
-            , parseData: function (res) {
-                res.data.records.forEach((record) => {
-                    record.createTime = new Date(record.createTime);
-                })
-                let tableData = {}
-                tableData.code = 0
-                tableData.msg = ''
-                tableData.count = 1000
-                tableData.data = res.data.records
-                return tableData
-            },
-        });
+
         $('.add').click(function () {
             element.tabAdd('tab', {
                 title: '添加企业公告',
@@ -84,7 +91,24 @@
                     '                        class="x-iframe"></iframe>',
                 id: '2'
             })
+            element.tabChange('tab', '2');
         })
+
+        table.on('tool(table)', function (obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            let data = obj.data; //获得当前行数据
+            let layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            let tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+            if (layEvent === 'detail') {
+                element.tabAdd('tab', {
+                    title: '查看企业公告信息',
+                    content: ' <iframe src="/checkAnno.html?id=' + data.id + '"\n' +
+                        '    frameborder="0" scrolling="yes"\n' +
+                        '  class="x-iframe"></iframe>',
+                    id: '3'
+                })
+                element.tabChange('tab', '3');
+            }
+        });
     });
 </script>
 </body>

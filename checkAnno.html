@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="node_modules/layui-src/src/css/layui.css">
+</head>
+<body>
+<table class="layui-table" lay-filter="annoTable">
+    <colgroup>
+        <col width="50">
+        <col width="200">
+    </colgroup>
+    <tbody>
+    <tr>
+        <th>企业标题</th>
+        <td>
+            <div id="noticeTitle"></div>
+        </td>
+    </tr>
+    <tr>
+        <th>来源</th>
+        <td>
+            <div id="source"></div>
+        </td>
+    </tr>
+    <tr>
+        <th>添加时间</th>
+        <td>
+            <div id="createTime"></div>
+        </td>
+    </tr>
+    <tr>
+        <th>详情</th>
+        <td>
+            <div id="noticeContent"></div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<script src="node_modules/layui-src/src/layui.js"></script>
+<script src="node_modules/layui-src/src/lay/modules/jquery.js"></script>
+<script>
+    let $ = layui.$;
+    let paramList = window.location.search.substring(1).split('=')
+    let annoId = paramList[paramList.indexOf('id') + 1]
+    let tableData = []
+
+    layui.use(['table', 'element'], function () {
+        let table = layui.table;
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            url: top.apiPath + "/user/impCompanyNotice/get/" + annoId,
+            headers: {"access_token": localStorage.getItem('token')},
+            success: function (result) {
+                $('#noticeTitle').text(result.data['noticeTitle'])
+                $('#source').text(result.data['source'])
+                $('#createTime').text(result.data['createTime'])
+                $('#noticeContent').html(result.data['noticeContent'])
+            }
+        });
+
+    })
+</script>
+</body>
+</html>
