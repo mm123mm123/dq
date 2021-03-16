@@ -33,7 +33,7 @@
     </div>
     <div class="layui-form-item">
         <div class="layui-input-block">
-            <button class="layui-btn" lay-submit lay-filter="subBtn">提交</button>
+            <button class="layui-btn" lay-submit lay-filter="subBtn">保存</button>
             <button id="cancel" class="layui-btn layui-btn-danger cancel" lay-filter="cancel">取消</button>
         </div>
     </div>
@@ -42,6 +42,8 @@
 <script src="node_modules/layui-src/src/layui.js"></script>
 <script src="node_modules/layui-src/src/lay/modules/jquery.js"></script>
 <script>
+    let paramList = window.location.search.substring(1).split('=')
+    let annoId = paramList[paramList.indexOf('id') + 1]
     layui.use(['layedit', 'form', 'element', "layer"], function () {
         let layedit = layui.layedit;
         let form = layui.form
@@ -50,25 +52,37 @@
         let apiPath = "http://localhost/api";
         let layer = layui.layer;
 
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            url: top.apiPath + "/user/impCompanyNotice/get/" + annoId,
+            headers: {"access_token": localStorage.getItem('token')},
+            success: function (result) {
+                $('input[name ="noticeTitle"]').val(result.data['noticeTitle'])
+                $('input[name ="source"]').val(result.data['source'])
+                $('input[name ="createTime"]').val(result.data['createTime'])
+                layedit.setContent(layeditIndex, result.data['noticeContent'])
+            }
+        });
         form.on('submit(subBtn)', function (data) {
             data.field.noticeContent = layedit.getContent(layeditIndex)
             $.ajax({
                 type: "POST",
                 dataType: "json",
                 contentType: "application/json;charset=utf-8",
-                url: apiPath + "/user/impCompanyNotice/save",
+                url: apiPath + "/user/impCompanyNotice/update/" + annoId,
                 headers: {"access_token": localStorage.getItem('token')},
                 data: JSON.stringify(data.field),
                 success: function (result) {
-                    layer.msg('保存成功')
-                    top.parentTabDel('2')
-                    console.log('hio');
+                    layer.msg('修改成功')
+                    top.parentTabDel('4')
                 }
             });
             return false;
         })
         $('.cancel').click(function () {
-            top.parentTabDel('2')
+            top.parentTabDel('4')
         })
     });
 </script>

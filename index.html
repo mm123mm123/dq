@@ -107,6 +107,15 @@
                     id: '3'
                 })
                 element.tabChange('tab', '3');
+            }else if(layEvent==='edit'){
+                element.tabAdd('tab', {
+                    title: '编辑企业公告信息',
+                    content: ' <iframe src="/editAnno.html?id=' + data.id + '"\n' +
+                        '    frameborder="0" scrolling="yes"\n' +
+                        '  class="x-iframe"></iframe>',
+                    id: '4'
+                })
+                element.tabChange('tab', '4');
             }
         });
     });
