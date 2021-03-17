@@ -75,7 +75,9 @@
                 headers: {"access_token": localStorage.getItem('token')},
                 data: JSON.stringify(data.field),
                 success: function (result) {
+                    top.annoTableIndex.reload()
                     layer.msg('修改成功')
+                    top.parentTabChange('1')
                     top.parentTabDel('4')
                 }
             });
